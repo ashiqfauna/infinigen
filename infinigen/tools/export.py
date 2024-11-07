@@ -973,6 +973,7 @@ def export_curr_scene(
 
 
 def main(args):
+    # Set up logging
     args.output_folder.mkdir(exist_ok=True)
     logging.basicConfig(
         filename=args.output_folder / "export_logs.log",
@@ -980,15 +981,27 @@ def main(args):
         filemode="w+",
     )
 
+    # Check if any file ending with "decimated.blend" exists in the input folder
+    decimated_files = list(args.input_folder.glob("*decimated.blend"))
+    if decimated_files:
+        # If any decimated.blend file exists, process only the first one found
+        blendfiles_to_process = [decimated_files[0]]
+    else:
+        # If no decimated.blend file exists, process only the first available .blend file
+        blendfiles_to_process = sorted(
+            [f for f in args.input_folder.iterdir() if f.suffix == ".blend"]
+        )[:1]  # Only the first .blend file
+
     targets = sorted(list(args.input_folder.iterdir()))
+
     for blendfile in targets:
         if blendfile.stem == "solve_state":
             shutil.copy(blendfile, args.output_folder / "solve_state.json")
 
-        if not blendfile.suffix == ".blend":
-            print(f"Skipping non-blend file {blendfile}")
-            continue
+    # Process blend files
+    for blendfile in blendfiles_to_process:
 
+        print(f"Processing blend file {blendfile}")
         bpy.ops.wm.open_mainfile(filepath=str(blendfile))
 
         folder = export_scene(
@@ -1000,11 +1013,12 @@ def main(args):
             individual_export=args.individual,
             omniverse_export=args.omniverse,
         )
-        # wanted to use shutil here but kept making corrupted files
+
+        # Compress the output folder
         subprocess.call(["zip", "-r", str(folder.with_suffix(".zip")), str(folder)])
 
+    # Close Blender after processing
     bpy.ops.wm.quit_blender()
-
 
 def make_args():
     parser = argparse.ArgumentParser()
