@@ -72,7 +72,7 @@ def render(
         resample_scene(int_hash((scene_seed, resample_idx)))
     with Timer("Render Frames"):
         render_image_func(frames_folder=Path(output_folder), camera=camera, flat_shading=flat_shading)
-
+    
 def is_static(obj):
     while True:
         if obj.name.startswith("scatter:"):
@@ -393,6 +393,7 @@ def main(input_folder, output_folder, waypoint_file, scene_seed, task, task_uniq
                 waypoint_folder.mkdir(parents=True, exist_ok=True)
             else:
                 waypoint_folder = output_folder
+
             if task_uniqname is not None:
                 create_text_file(filename=f"START_{task_uniqname}")
 
@@ -414,9 +415,10 @@ def main(input_folder, output_folder, waypoint_file, scene_seed, task, task_uniq
                     text=gin.operative_config_str(),
                 )
             # breakpoint()
-            if task[0] == 'render':
+            if task[0] == 'render'and waypoint_file is not None:
                 results_folder = Path(output_folder) / "results" / f"waypoint_{i}"
                 frames_folder = Path(output_folder) / "frames"
+
                 if flat:
                     os.makedirs(results_folder, exist_ok=True)
                     # Copy contents from frames_folder to results_folder, excluding "Image" subdirectory
@@ -433,6 +435,7 @@ def main(input_folder, output_folder, waypoint_file, scene_seed, task, task_uniq
                 else:
                     if results_folder.exists():
                         shutil.rmtree(results_folder)
+                    print(frames_folder, results_folder, output_folder)
                     shutil.copytree(frames_folder, results_folder)
 
                 print("results_folder.exists()", results_folder.exists())
