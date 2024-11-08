@@ -414,7 +414,7 @@ def main(input_folder, output_folder, waypoint_file, scene_seed, task, task_uniq
                     filename=f"operative_gin_{task_uniqname}.txt",
                     text=gin.operative_config_str(),
                 )
-            # breakpoint()
+
             if task[0] == 'render'and waypoint_file is not None:
                 results_folder = Path(output_folder) / "results" / f"waypoint_{i}"
                 frames_folder = Path(output_folder) / "frames"
